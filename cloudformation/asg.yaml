@@ -15,30 +15,50 @@ Resources:
         - subnet-0dc077ed134195992
       LaunchConfigurationName:
         Ref: LaunchConfig
-      MinSize: 2
-      MaxSize: 2
+      MinSize: 3
+      MaxSize: 3
       # LoadBalancerNames:
       #   - !Ref ApplicationLoadBalancer
       TargetGroupARNs:
-        - Ref: ALBTargetGroup
+        - Ref: ALBTargetGroup1
+        - Ref: ALBTargetGroup2
 
-  ALBTargetGroup:
+  ALBTargetGroup1:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       Port: 9092
       Protocol: TCP
       VpcId: vpc-03828dee0a9bfcc5a
 
-  ALBListener:
+  ALBTargetGroup2:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Port: 2181
+      Protocol: TCP
+      VpcId: vpc-03828dee0a9bfcc5a
+
+  ALBListener1:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       DefaultActions:
       - Type: forward
         TargetGroupArn:
-          Ref: ALBTargetGroup
+          Ref: ALBTargetGroup1
       LoadBalancerArn:
         Ref: ApplicationLoadBalancer
       Port: 9092
+      Protocol: TCP
+
+  ALBListener2:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn:
+          Ref: ALBTargetGroup2
+      LoadBalancerArn:
+        Ref: ApplicationLoadBalancer
+      Port: 2181
       Protocol: TCP
 
   ApplicationLoadBalancer:
@@ -53,7 +73,7 @@ Resources:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
       KeyName: roman_test
-      ImageId: ami-0208fcaa1fadbd825
+      ImageId: ami-0d289ef488f07295c
       # SecurityGroups:
       # - Ref: InstanceSecurityGroup
       InstanceType: t2.small
