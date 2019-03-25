@@ -37,9 +37,12 @@ echo $ZOOKEEPER_NODES
 
 rm -rf /tmp/kafka-logs/*
 
-sed "s/broker.id=#BROKER_ID#/$SERVER_I/g" /home/ec2-user/kafka_2.11-2.1.0/config/server.properties.default > /home/ec2-user/kafka_2.11-2.1.0/config/server.properties.temp
+curl "https://raw.githubusercontent.com/ThinkportRepo/kafka_zipkin_demo/master/default_cfg/server.properties.default" > /home/ec2-user/kafka_2.11-2.1.0/config/server.properties.temp
+
+sed -i "s/broker.id=#BROKER_ID#/$SERVER_I/g" /home/ec2-user/kafka_2.11-2.1.0/config/server.properties.temp
 sed -i "s/#ZOOKEEPER_CONNECT#/$ZOOKEEPER_CONNECT/g" /home/ec2-user/kafka_2.11-2.1.0/config/server.properties.temp
-sed -i "s/#ATVERTISED_LISTENERS#/PLAINTEXT://$MY_IP:9092/g" /home/ec2-user/kafka_2.11-2.1.0/config/server.properties.temp
+echo $MY_IP
+sed -i "s/#ATVERTISED_LISTENERS#/PLAINTEXT:\/\/$MY_IP:9092/g" /home/ec2-user/kafka_2.11-2.1.0/config/server.properties.temp
 #sed -i "s/zookeeper.connection.timeout.ms=6000/zookeeper.connection.timeout.ms=180000/" /home/ec2-user/kafka_2.11-2.1.0/config/server.properties.temp
 #zookeeper.connection.timeout.ms=6000
 
@@ -47,8 +50,8 @@ cp /home/ec2-user/kafka_2.11-2.1.0/config/zookeeper.properties.default /home/ec2
 
 echo "$ZOOKEEPER_NODES" >> /home/ec2-user/kafka_2.11-2.1.0/config/zookeeper.properties.temp
 
-mv /home/ec2-user/kafka_2.11-2.1.0/config/server.properties.temp /home/ec2-user/kafka_2.11-2.1.0/config/server.properties
-mv /home/ec2-user/kafka_2.11-2.1.0/config/zookeeper.properties.temp /home/ec2-user/kafka_2.11-2.1.0/config/zookeeper.properties
+mv -f /home/ec2-user/kafka_2.11-2.1.0/config/server.properties.temp /home/ec2-user/kafka_2.11-2.1.0/config/server.properties
+mv -f /home/ec2-user/kafka_2.11-2.1.0/config/zookeeper.properties.temp /home/ec2-user/kafka_2.11-2.1.0/config/zookeeper.properties
 
 mkdir -p /home/ec2-user/logs
 echo $(($SERVER_I)) > /tmp/zookeeper/myid
