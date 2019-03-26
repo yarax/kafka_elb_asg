@@ -73,7 +73,7 @@ Resources:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
       KeyName: roman_test
-      ImageId: ami-0d289ef488f07295c
+      ImageId: ami-09def150731bdbcc2
       # SecurityGroups:
       # - Ref: InstanceSecurityGroup
       InstanceType: t2.small
