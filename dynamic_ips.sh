@@ -30,12 +30,16 @@ for eip in $(echo "${eips}" | jq -rc '.Addresses[]'); do
     INST_ID=$(echo $eip | jq -r '.InstanceId')
     ALLOC=$(echo $eip | jq -r '.AllocationId')
     IP=$(echo $eip | jq -r '.PublicIp')
-    if [[ $INST_ID == 'null' ]] && [[ ASSIGNED == 0 ]]; then
-        ASSIGNED=1
-        SERVER_I=$COUNTER
-        IP='0.0.0.0'
-        echo "Assigned $IP"
-        aws ec2 associate-address --region eu-central-1 --allocation-id $ALLOC --instance-id $MY_INST_ID
+    if [[ $INST_ID == 'null' ]] && [[ $ASSIGNED == 0 ]]; then
+        ASSIGNATION_FAILED=0
+        aws ec2 associate-address --region eu-central-1 --allocation-id $ALLOC --instance-id $MY_INST_ID || ASSIGNATION_FAILED=1
+        if [[ $ASSIGNATION_FAILED == 0 ]]; then
+            ASSIGNED=1
+            SERVER_I=$COUNTER
+            IP='0.0.0.0'
+            echo "Assigned $IP"
+        fi
+        
     fi
     ZOOKEEPER_NODES=$ZOOKEEPER_NODES"server.$COUNTER=$IP:2888:3888"$'\n'
     if [ $COUNTER == 1 ]; then
