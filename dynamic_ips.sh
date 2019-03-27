@@ -15,7 +15,8 @@ cd kafka_2.11-2.1.0
 INSTANCE_LAUNCH_ID=$(curl http://169.254.169.254/latest/meta-data/ami-launch-index)
 MY_INST_ID=$(curl http://169.254.169.254/latest/meta-data/instance-id)
 
-MY_IP=$(aws ec2 --region eu-central-1 describe-instances --instance-ids $MY_INST_ID --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)
+#MY_IP=$(aws ec2 --region eu-central-1 describe-instances --instance-ids $MY_INST_ID --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)
+MY_IP="UNDEFINED"
 
 # instances=$(aws autoscaling --region eu-central-1 describe-auto-scaling-groups --auto-scaling-group-names $MY_ASG_NAME)
 
@@ -37,6 +38,7 @@ for eip in $(echo "${eips}" | jq -rc '.Addresses[]'); do
             ASSIGNED=1
             SERVER_I=$COUNTER
             IP='0.0.0.0'
+            MY_IP=IP
             echo "Assigned $IP"
         fi
         
