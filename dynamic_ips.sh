@@ -8,17 +8,14 @@ sudo yum install -y jq
 sudo yum install -y wget
 sudo yum install -y java
 cd ~
-wget "http://apache.lauf-forum.at/kafka/2.1.0/kafka_2.11-2.1.0.tgz"
+wget "http://archive.apache.org/dist/kafka/2.1.0/kafka_2.11-2.1.0.tgz"
 tar -xvf kafka_2.11-2.1.0.tgz
 cd kafka_2.11-2.1.0
 
 INSTANCE_LAUNCH_ID=$(curl http://169.254.169.254/latest/meta-data/ami-launch-index)
 MY_INST_ID=$(curl http://169.254.169.254/latest/meta-data/instance-id)
 
-#MY_IP=$(aws ec2 --region eu-central-1 describe-instances --instance-ids $MY_INST_ID --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)
 MY_IP="UNDEFINED"
-
-# instances=$(aws autoscaling --region eu-central-1 describe-auto-scaling-groups --auto-scaling-group-names $MY_ASG_NAME)
 
 ZOOKEEPER_NODES=""
 ZOOKEEPER_CONNECT=""
@@ -37,11 +34,10 @@ for eip in $(echo "${eips}" | jq -rc '.Addresses[]'); do
         if [[ $ASSIGNATION_FAILED == 0 ]]; then
             ASSIGNED=1
             SERVER_I=$COUNTER
+            MY_IP=$IP
             IP='0.0.0.0'
-            MY_IP=IP
             echo "Assigned $IP"
         fi
-        
     fi
     ZOOKEEPER_NODES=$ZOOKEEPER_NODES"server.$COUNTER=$IP:2888:3888"$'\n'
     if [ $COUNTER == 1 ]; then
@@ -55,6 +51,8 @@ done
 echo $ZOOKEEPER_NODES
 echo $ZOOKEEPER_CONNECT
 
+SERVER_ID=$(echo $MY_IP | tr . '\n' | awk '{s = s*256 + $1} END{print s}')
+
 # Download default configuration templates
 curl "https://raw.githubusercontent.com/ThinkportRepo/kafka_zipkin_demo/master/default_cfg/server.properties.default" > ./config/server.properties.temp
 curl "https://raw.githubusercontent.com/ThinkportRepo/kafka_zipkin_demo/master/default_cfg/zookeeper.properties.default" > ./config/zookeeper.properties.temp
@@ -62,8 +60,6 @@ curl "https://raw.githubusercontent.com/ThinkportRepo/kafka_zipkin_demo/master/d
 sed -i "s/#BROKER_ID#/$SERVER_I/g" ./config/server.properties.temp
 sed -i "s/#ZOOKEEPER_CONNECT#/$ZOOKEEPER_CONNECT/g" ./config/server.properties.temp
 sed -i "s/#ATVERTISED_LISTENERS#/PLAINTEXT:\/\/$MY_IP:9092/g" ./config/server.properties.temp
-
-#sed -i "s/zookeeper.connection.timeout.ms=6000/zookeeper.connection.timeout.ms=180000/" ./config/server.properties.temp
 
 echo "$ZOOKEEPER_NODES" >> ./config/zookeeper.properties.temp
 
